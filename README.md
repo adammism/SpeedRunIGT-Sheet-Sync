@@ -73,9 +73,9 @@ Paths that are **not** absolute are resolved relative to the **directory contain
 
 ```json
 {
-  "records_dir": "../speedrunigt/records",
+  "records_dir": "<RECORDS PATH>",
   "credentials_path": "service-account.json",
-  "spreadsheet_id": "your-spreadsheet-id",
+  "spreadsheet_id": "<SPREADSHEET_ID>",
   "worksheet_name": "Raw Data"
 }
 ```
