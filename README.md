@@ -4,6 +4,8 @@ Small Python CLI for **[SpeedRunIGT](https://github.com/RedLime/SpeedRunIGT)** t
 
 **Source:** [qalue/SpeedRunIGT-Sheet-Sync](https://github.com/qalue/SpeedRunIGT-Sheet-Sync)
 
+**Example Sheet (mine):** [open in Google Sheets](https://docs.google.com/spreadsheets/d/1bQQxu4zg-OugU3jmwAKL7npmBW6-B6cXuyM2jCJZMOE/edit?usp=sharing)
+
 ---
 
 ## Prerequisites
