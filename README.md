@@ -1,8 +1,8 @@
 # SpeedRunIGT Sheet Sync
 
-**Upload [SpeedRunIGT](https://github.com/RedLime/SpeedRunIGT) run JSON logs to your Google Sheet** — watch a folder, bulk-import, or push a single file. New runs insert at the top of your data so the latest times stay on top.
+Small Python CLI for **[SpeedRunIGT](https://github.com/RedLime/SpeedRunIGT)** to upload completions to a google sheet automatically.
 
-Repository: **[github.com/qalue/SpeedRunIGT-Sheet-Sync](https://github.com/qalue/SpeedRunIGT-Sheet-Sync)**
+**Source:** [qalue/SpeedRunIGT-Sheet-Sync](https://github.com/qalue/SpeedRunIGT-Sheet-Sync)
 
 ---
 
