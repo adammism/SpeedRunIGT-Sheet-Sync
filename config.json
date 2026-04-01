@@ -1,0 +1,6 @@
+{
+  "records_dir": "<RECORDS PATH>",
+  "credentials_path": "service-account.json",
+  "spreadsheet_id": "<SPREADSHEET_ID>",
+  "worksheet_name": "Raw Data"
+}
