@@ -2,7 +2,7 @@
 
 Small Python CLI for **[SpeedRunIGT](https://github.com/RedLime/SpeedRunIGT)** to upload completions to a google sheet automatically.
 
-**Source:** [qalue/SpeedRunIGT-Sheet-Sync](https://github.com/qalue/SpeedRunIGT-Sheet-Sync)
+**Source:** [adammism/SpeedRunIGT-Sheet-Sync](https://github.com/adammism/SpeedRunIGT-Sheet-Sync)
 
 **Example Sheet (mine):** [open in Google Sheets](https://docs.google.com/spreadsheets/d/1bQQxu4zg-OugU3jmwAKL7npmBW6-B6cXuyM2jCJZMOE/edit?usp=sharing)
 
@@ -20,7 +20,7 @@ Small Python CLI for **[SpeedRunIGT](https://github.com/RedLime/SpeedRunIGT)** t
 ## Install
 
 ```bash
-git clone https://github.com/qalue/SpeedRunIGT-Sheet-Sync.git
+git clone https://github.com/adammism/SpeedRunIGT-Sheet-Sync.git
 cd SpeedRunIGT-Sheet-Sync
 python -m venv .venv
 ```
