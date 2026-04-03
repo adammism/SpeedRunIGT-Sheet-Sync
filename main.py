@@ -32,8 +32,7 @@ TimelineIgtColumns = [
     ("enter_fortress", "enter_fortress"),
     ("nether_exit", "nether_travel"),
     ("enter_stronghold", "enter_stronghold"),
-    ("enter_end", "enter_end"),
-    ("kill_ender_dragon", "kill_ender_dragon"),
+    ("enter_end", "enter_end")
 ]
 
 TradeItems = [
