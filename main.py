@@ -26,15 +26,14 @@ Gap = ""
 
 DataStartRow = 4
 
-TimelineIgtNames = [
-    "enter_nether",
-    "enter_bastion",
-    "enter_fortress",
-    "nether_travel",
-    "nether_travel_blind",
-    "enter_stronghold",
-    "enter_end",
-    "kill_ender_dragon",
+TimelineIgtColumns = [
+    ("enter_nether", "enter_nether"),
+    ("enter_bastion", "enter_bastion"),
+    ("enter_fortress", "enter_fortress"),
+    ("nether_exit", "nether_travel"),
+    ("enter_stronghold", "enter_stronghold"),
+    ("enter_end", "enter_end"),
+    ("kill_ender_dragon", "kill_ender_dragon"),
 ]
 
 TradeItems = [
@@ -108,15 +107,19 @@ def LoadConfig(PathArg: Path) -> dict[str, Any]:
     if not PathArg.is_file():
         print(f"Missing config: {PathArg}\nCopy config.example.json to config.json and edit.", file=sys.stderr)
         sys.exit(1)
+
     with PathArg.open(encoding="utf-8") as F:
         Cfg = json.load(F)
+
     Base = PathArg.resolve().parent
+
     for Key in ("credentials_path", "records_dir"):
         if Key not in Cfg or not isinstance(Cfg[Key], str):
             continue
         P = Path(Cfg[Key])
         if not P.is_absolute():
             Cfg[Key] = str((Base / P).resolve())
+
     return Cfg
 
 
@@ -125,8 +128,10 @@ def LoadState() -> dict[str, Any]:
         State: dict[str, Any] = {"files": {}, "logged_names": []}
         SaveState(State)
         return State
+
     with StateFile.open(encoding="utf-8") as F:
         State = json.load(F)
+
     State.setdefault("files", {})
     State.setdefault("logged_names", [])
     return State
@@ -139,10 +144,12 @@ def SaveState(State: dict[str, Any]) -> None:
 
 def TimelineMap(Data: dict[str, Any]) -> dict[str, dict[str, Any]]:
     Out: dict[str, dict[str, Any]] = {}
+
     for Entry in Data.get("timelines") or []:
         Name = Entry.get("name")
         if isinstance(Name, str):
             Out[Name] = Entry
+
     return Out
 
 
@@ -150,10 +157,13 @@ def InferSpawnBiome(Data: dict[str, Any]) -> str:
     Adv = (Data.get("advancements") or {}).get("minecraft:adventure/adventuring_time")
     if not isinstance(Adv, dict):
         return ""
+
     Crit = Adv.get("criteria")
     if not isinstance(Crit, dict):
         return ""
+
     Candidates: list[tuple[int, str]] = []
+
     for BiomeKey, Entry in Crit.items():
         if not isinstance(Entry, dict):
             continue
@@ -162,8 +172,10 @@ def InferSpawnBiome(Data: dict[str, Any]) -> str:
         Name = BiomeKey.split(":")[-1].replace("_", " ").title()
         Rta0 = Entry.get("rta") == 0
         Candidates.append((0 if Rta0 else 1, Name))
+
     if not Candidates:
         return ""
+
     Candidates.sort()
     return Candidates[0][1]
 
@@ -171,10 +183,12 @@ def InferSpawnBiome(Data: dict[str, Any]) -> str:
 def FormatDateDdmmyyyy(Ms: Any) -> str:
     if Ms is None:
         return ""
+
     try:
         MsI = int(Ms)
     except (TypeError, ValueError):
         return ""
+
     try:
         Dt = datetime.fromtimestamp(MsI / 1000.0)
         return f"{Dt.day:02d}/{Dt.month:02d}/{Dt.year}"
@@ -185,28 +199,35 @@ def FormatDateDdmmyyyy(Ms: Any) -> str:
 def FormatIgtMs(Ms: Any) -> str:
     if Ms is None:
         return ""
+
     try:
         MsI = int(Ms)
     except (TypeError, ValueError):
         return ""
+
     if MsI < 0:
         return ""
+
     TotalSec = MsI // 1000
     H = TotalSec // 3600
     M = (TotalSec % 3600) // 60
     S = TotalSec % 60
+
     return f"{H}:{M:02d}:{S:02d}"
 
 
 def FirstPlayerStats(Data: dict[str, Any]) -> dict[str, Any]:
     StatsRoot = Data.get("stats")
+
     if not isinstance(StatsRoot, dict):
         return {}
+
     for _, Block in StatsRoot.items():
         if isinstance(Block, dict):
             Inner = Block.get("stats")
             if isinstance(Inner, dict):
                 return Inner
+
     return {}
 
 
@@ -219,6 +240,7 @@ def StatNum(Inner: dict[str, Any], Category: str, ItemKey: str) -> int:
     V = Cat(Inner, Category).get(ItemKey)
     if V is None:
         return 0
+
     try:
         return int(V)
     except (TypeError, ValueError):
@@ -228,12 +250,13 @@ def StatNum(Inner: dict[str, Any], Category: str, ItemKey: str) -> int:
 def CmToBlocks(Cm: int) -> int:
     if Cm <= 0:
         return 0
+
     return Cm // 100
 
 
 def BuildHeaderGroups() -> list[list[str]]:
     G1 = ["date"]
-    G2 = ["rta", *TimelineIgtNames, "igt"]
+    G2 = ["rta", *[H for H, _ in TimelineIgtColumns], "igt"]
     G3 = ["gold_dropped", "blaze_rods", "blazes_killed", "flint_picked_up", "gravel_mined"]
     G4 = ["deaths", "jumps", "eyes_used", "ender_pearls_used", "obsidian_placed"]
     G5 = ["stone_mined", "netherrack_mined"]
@@ -241,32 +264,39 @@ def BuildHeaderGroups() -> list[list[str]]:
     G7 = [f"killed_{M}" for M in MobNames]
     G8 = [f"eaten_{F}" for F in FoodNames]
     G9 = [H for H, _ in TravelStats]
+
     return [G1, G2, G3, G4, G5, G6, G7, G8, G9]
 
 
 def AllHeaders() -> list[str]:
     Groups = BuildHeaderGroups()
     Out: list[str] = []
+
     for I, G in enumerate(Groups):
         if I > 0:
             Out.append(Gap)
         Out.extend(G)
+
     return Out
 
 
 def ColLetterOneBased(N: int) -> str:
     if N < 1:
         raise ValueError("column index must be >= 1")
+
     S = ""
+
     while N:
         N, R = divmod(N - 1, 26)
         S = chr(65 + R) + S
+
     return S
 
 
 def BuildRow(Data: dict[str, Any], SourceFile: str) -> list[Any] | None:
     if not Data.get("is_completed"):
         return None
+
     if Data.get("is_cheat_allowed", False):
         return None
 
@@ -279,9 +309,13 @@ def BuildRow(Data: dict[str, Any], SourceFile: str) -> list[Any] | None:
     G2: list[Any] = [
         FormatIgtMs(FinalRtaMs),
     ]
-    for Name in TimelineIgtNames:
-        T = Timelines.get(Name)
+
+    for Header, JsonKey in TimelineIgtColumns:
+        T = Timelines.get(JsonKey)
+        if T is None and JsonKey != Header:
+            T = Timelines.get(Header)
         G2.append(FormatIgtMs(T.get("igt")) if T else "")
+
     G2.append(FormatIgtMs(Data.get("final_igt")))
 
     G3 = [
@@ -316,11 +350,13 @@ def BuildRow(Data: dict[str, Any], SourceFile: str) -> list[Any] | None:
         G9.append(CmToBlocks(StatNum(Inner, "minecraft:custom", f"minecraft:{Key}")))
 
     Groups = [G1, G2, G3, G4, G5, G6, G7, G8, G9]
+
     Out: list[Any] = []
     for I, G in enumerate(Groups):
         if I > 0:
             Out.append(Gap)
         Out.extend(G)
+
     return Out
 
 
@@ -332,7 +368,9 @@ def GetWorksheet(Cfg: dict[str, Any]):
 
     Gc = gspread.service_account(filename=str(CredPath), scopes=Scopes)
     Sh = Gc.open_by_key(Cfg["spreadsheet_id"])
+
     Name = Cfg.get("worksheet_name") or "Raw Data"
+
     try:
         return Sh.worksheet(Name)
     except gspread.WorksheetNotFound:
@@ -342,6 +380,7 @@ def GetWorksheet(Cfg: dict[str, Any]):
 def NormalizeCell(C: Any) -> str:
     if C is None:
         return ""
+
     return str(C)
 
 
@@ -355,6 +394,7 @@ def EnsureHeaders(Ws, Headers: list[str]) -> None:
             value_input_option=ValueInputOption.user_entered,
         )
         return
+
     NormExisting = [NormalizeCell(C) for C in Existing[: len(Headers)]]
     NormHeaders = list(Headers)
     if NormExisting != NormHeaders:
@@ -367,9 +407,11 @@ def EnsureHeaders(Ws, Headers: list[str]) -> None:
 
 def AppendRow(Ws, Row: list[Any], Headers: list[str]) -> None:
     EnsureHeaders(Ws, Headers)
+
     N = len(Row)
     if N == 0:
         return
+
     Ws.insert_row(
         Row,
         index=DataStartRow,
@@ -378,25 +420,22 @@ def AppendRow(Ws, Row: list[Any], Headers: list[str]) -> None:
     )
 
 
-def ProcessFile(
-    PathArg: Path,
-    Cfg: dict[str, Any],
-    Ws,
-    Headers: list[str],
-    State: dict[str, Any],
-    Force: bool,
-) -> str:
+def ProcessFile(PathArg: Path, Cfg: dict[str, Any], Ws, Headers: list[str], State: dict[str, Any], Force: bool) -> str:
     Key = str(PathArg.resolve())
+
     try:
         St = PathArg.stat()
     except OSError:
         return "stat_error"
 
     Sig = f"{St.st_mtime_ns}:{St.st_size}"
+
     FilesState = State.setdefault("files", {})
     LoggedNames: list[str] = State.setdefault("logged_names", [])
+
     if not Force and PathArg.name in LoggedNames:
         return "synced"
+
     if not Force and FilesState.get(Key) == Sig:
         return "synced"
 
@@ -419,14 +458,18 @@ def ProcessFile(
         return "incomplete"
 
     AppendRow(Ws, Row, Headers)
+
     FilesState[Key] = Sig
+
     if PathArg.name not in LoggedNames:
         LoggedNames.append(PathArg.name)
+
     Biome = InferSpawnBiome(Data)
     if Biome:
         print(f"Uploaded: {PathArg.name}  |  spawn biome: {Biome}")
     else:
         print(f"Uploaded: {PathArg.name}  |  spawn biome: (unknown)")
+
     return "uploaded"
 
 
@@ -445,6 +488,7 @@ def ScanDirectory(Cfg: dict[str, Any], State: dict[str, Any], Force: bool) -> No
         return
 
     print(f"Scanning {len(Paths)} JSON file(s) in {Root}")
+
     Counts: dict[str, int] = {}
     for PathItem in Paths:
         Outcome = ProcessFile(PathItem, Cfg, Ws, Headers, State, Force=Force)
@@ -457,12 +501,14 @@ def ScanDirectory(Cfg: dict[str, Any], State: dict[str, Any], Force: bool) -> No
     Cheat = Counts.get("skipped_cheat", 0)
     Err = Counts.get("read_error", 0) + Counts.get("stat_error", 0)
     Parts = [f"{U} uploaded", f"{S} skipped (already synced)"]
+
     if Inc:
         Parts.append(f"{Inc} skipped (run not completed)")
     if Cheat:
         Parts.append(f"{Cheat} skipped (cheats allowed)")
     if Err:
         Parts.append(f"{Err} errors")
+
     print("Done: " + ", ".join(Parts) + ".")
     if S and not Force:
         print("Tip: re-upload all files with --scan-all --force (ignores .synced_runs.json).")
@@ -498,12 +544,16 @@ class JsonHandler(FileSystemEventHandler):
     def Handle(self, Event) -> None:
         if getattr(Event, "is_directory", False):
             return
+
         PathArg = Path(Event.src_path)
         if PathArg.suffix.lower() != ".json":
             return
+
         if PathArg.resolve().parent != self.Records:
             return
+
         time.sleep(0.6)
+
         ProcessFile(PathArg, self.Cfg, self.Ws, self.Headers, self.State, Force=False)
         SaveState(self.State)
 
@@ -512,10 +562,12 @@ def ResolveJsonPath(P: Path, Cfg: dict[str, Any]) -> Path:
     P = P.expanduser()
     if P.is_file():
         return P.resolve()
+
     if not P.is_absolute():
         InRecords = Path(Cfg["records_dir"]) / P.name
         if InRecords.is_file():
             return InRecords.resolve()
+    
     return P.resolve()
 
 
@@ -536,6 +588,7 @@ def Main() -> None:
         dest="Force",
         help="Re-upload even if file is unchanged (see .synced_runs.json state)",
     )
+
     Args = Parser.parse_args()
 
     Cfg = LoadConfig(Args.Config)
@@ -544,6 +597,7 @@ def Main() -> None:
 
     if Args.File:
         PathArg = ResolveJsonPath(Args.File, Cfg)
+
         if not PathArg.is_file():
             print(
                 f"Not a file: {Args.File}\n"
@@ -552,9 +606,12 @@ def Main() -> None:
                 file=sys.stderr,
             )
             sys.exit(1)
+
         Ws = GetWorksheet(Cfg)
         Outcome = ProcessFile(PathArg, Cfg, Ws, Headers, State, Force=Args.Force)
+        
         SaveState(State)
+        
         if Outcome == "synced":
             print(
                 "Skipped: this file is already synced (unchanged). "
@@ -566,6 +623,7 @@ def Main() -> None:
         elif Outcome == "stat_error":
             print(f"Error: could not read file stats: {PathArg}", file=sys.stderr)
             sys.exit(1)
+
         return
 
     if Args.ScanAll:
@@ -577,18 +635,25 @@ def Main() -> None:
         if not Records.is_dir():
             print(f"records_dir is not a directory: {Records}", file=sys.stderr)
             sys.exit(1)
+
         Handler = JsonHandler(Cfg, State, Records)
+        
         ObserverInstance = Observer()
         ObserverInstance.schedule(Handler, str(Records), recursive=False)
         ObserverInstance.start()
+        
         print(f"Watching {Records} — Ctrl+C to stop.")
+        
         try:
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
             ObserverInstance.stop()
+        
         ObserverInstance.join()
+        
         SaveState(Handler.State)
+        
         return
 
     Parser.print_help()
