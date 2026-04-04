@@ -334,7 +334,7 @@ def BuildRow(Data: dict[str, Any], SourceFile: str) -> list[Any] | None:
     ]
 
     G5 = [
-        StatNum(Inner, "minecraft:mined", "minecraft:stone"),
+        StatNum(Inner, "minecraft:mined", "minecraft:stone") + StatNum(Inner, "minecraft:mined", "minecraft:cobblestone"),
         StatNum(Inner, "minecraft:mined", "minecraft:netherrack"),
     ]
 
