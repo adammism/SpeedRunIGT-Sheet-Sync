@@ -6,6 +6,7 @@ Small Python CLI for **[SpeedRunIGT](https://github.com/RedLime/SpeedRunIGT)** t
 
 **Example Sheet (mine):** [open in Google Sheets](https://docs.google.com/spreadsheets/d/1bQQxu4zg-OugU3jmwAKL7npmBW6-B6cXuyM2jCJZMOE/edit?usp=sharing)
 
+*Note: This will flag MCSR Ranked runs also; a setting to switch between RSG & Ranked runs will be added later.
 ---
 
 ## Prerequisites
