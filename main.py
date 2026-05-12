@@ -318,7 +318,7 @@ def BuildRow(Data: dict[str, Any], SourceFile: str) -> list[Any] | None:
     G2.append(FormatIgtMs(Data.get("final_igt")))
 
     G3 = [
-        StatNum(Inner, "minecraft:dropped", "minecraft:gold_ingot"),
+        StatNum(Inner, "minecraft:dropped", "minecraft:gold_ingot") - StatNum(Inner, "minecraft:picked_up", "minecraft:gold_ingot"),
         StatNum(Inner, "minecraft:picked_up", "minecraft:blaze_rod"),
         StatNum(Inner, "minecraft:killed", "minecraft:blaze"),
         StatNum(Inner, "minecraft:picked_up", "minecraft:flint"),
@@ -417,6 +417,8 @@ def AppendRow(Ws, Row: list[Any], Headers: list[str]) -> None:
         value_input_option=ValueInputOption.user_entered,
         inherit_from_before=False,
     )
+
+    time.sleep(1.5)
 
 
 def ProcessFile(PathArg: Path, Cfg: dict[str, Any], Ws, Headers: list[str], State: dict[str, Any], Force: bool) -> str:
